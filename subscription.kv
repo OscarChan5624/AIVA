@@ -1,0 +1,511 @@
+#:import utils kivy.utils
+#:import dp kivy.metrics.dp
+
+<SubscriptionScreen@Screen>:
+    name: 'subscription'
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        # Header with back button
+        BoxLayout:
+            size_hint_y: None
+            height: dp(64)
+            padding: dp(16), dp(12)
+            spacing: dp(12)
+            Button:
+                text: '< Back'
+                size_hint_x: None
+                width: dp(90)
+                background_normal: ''
+                background_color: utils.get_color_from_hex('#2d2d48')
+                color: 1, 1, 1, 1
+                on_release: app.back_to_profile()
+            Label:
+                text: 'Subscription Plans'
+                color: 1, 1, 1, 1
+                font_size: '20sp'
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Widget:
+                size_hint_x: None
+                width: dp(48)
+        
+        # Scrollable pricing cards
+        ScrollView:
+            do_scroll_x: False
+            bar_color: 1, 1, 1, .2
+            bar_inactive_color: 1, 1, 1, .1
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(20)
+                spacing: dp(20)
+                
+                # Subtitle
+                Label:
+                    text: 'Choose the plan that works best for you'
+                    color: 0.81, 0.82, 1, 1
+                    font_size: '14sp'
+                    size_hint_y: None
+                    height: dp(30)
+                    halign: 'center'
+                    valign: 'middle'
+                    text_size: self.size
+                
+                # BASIC PLAN
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(480)
+                    padding: dp(24)
+                    spacing: dp(16)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    # Plan name
+                    Label:
+                        text: 'BASIC'
+                        color: 0.81, 0.82, 1, 1
+                        font_size: '14sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(25)
+                        halign: 'center'
+                        valign: 'middle'
+                    
+                    # Price
+                    Label:
+                        text: 'FREE'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '32sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(50)
+                        halign: 'center'
+                        valign: 'middle'
+                    
+                    Label:
+                        text: 'Forever'
+                        color: 0.81, 0.82, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: dp(20)
+                        halign: 'center'
+                        valign: 'middle'
+                    
+                    Widget:
+                        size_hint_y: None
+                        height: dp(10)
+                    
+                    # Features
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(180)
+                        spacing: dp(8)
+                        padding: dp(4), dp(0)
+                        
+                        Label:
+                            text: '* Basic Pomodoro Timer'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Task Management'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Daily Statistics'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Calendar View'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Basic Notifications'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                    
+                    Widget:
+                        size_hint_y: 1
+                    
+                    # Subscribe button
+                    Button:
+                        text: 'Current Plan'
+                        size_hint_y: None
+                        height: dp(50)
+                        background_normal: ''
+                        background_color: utils.get_color_from_hex('#3d3d5c')
+                        color: 0.81, 0.82, 1, 1
+                        font_size: '16sp'
+                        bold: True
+                        disabled: True
+                
+                # PRO PLAN
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(520)
+                    padding: dp(24)
+                    spacing: dp(16)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#2d2d5c')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    # Plan name
+                    Label:
+                        text: 'PRO'
+                        color: 0.66, 0.55, 0.98, 1
+                        font_size: '14sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(25)
+                        halign: 'center'
+                        valign: 'middle'
+                    
+                    # Price
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(50)
+                        spacing: dp(5)
+                        Label:
+                            text: '$4.99'
+                            color: 0.66, 0.55, 0.98, 1
+                            font_size: '32sp'
+                            bold: True
+                            halign: 'right'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '/month'
+                            color: 0.81, 0.82, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'bottom'
+                            text_size: self.size
+                            size_hint_x: 0.5
+                    
+                    Label:
+                        text: 'or $49.99/year (save 17%)'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '12sp'
+                        size_hint_y: None
+                        height: dp(20)
+                        halign: 'center'
+                        valign: 'middle'
+                    
+                    Widget:
+                        size_hint_y: None
+                        height: dp(10)
+                    
+                    # Features
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(220)
+                        spacing: dp(8)
+                        padding: dp(4), dp(0)
+                        
+                        Label:
+                            text: '* Everything in Basic'
+                            color: 0.3, 0.98, 0.6, 1
+                            font_size: '13sp'
+                            bold: True
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Advanced Analytics'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Unlimited Tasks'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Custom Focus Sessions'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Priority Notifications'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Cloud Backup'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Ad-Free Experience'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                    
+                    Widget:
+                        size_hint_y: 1
+                    
+                    # Subscribe button
+                    Button:
+                        text: 'Subscribe to Pro'
+                        size_hint_y: None
+                        height: dp(50)
+                        background_normal: ''
+                        background_color: 0.66, 0.55, 0.98, 1
+                        color: 1, 1, 1, 1
+                        font_size: '16sp'
+                        bold: True
+                        on_release: app.subscribe_plan('pro')
+                
+                # PRO+ PLAN
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(570)
+                    padding: dp(24)
+                    spacing: dp(16)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                        # Premium border
+                        Color:
+                            rgba: 0.3, 0.98, 0.6, 0.3
+                        Line:
+                            rounded_rectangle: [self.x, self.y, self.width, self.height, 20]
+                            width: 2
+                    
+                    # Plan name
+                    Label:
+                        text: 'PRO+'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '14sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(25)
+                        halign: 'center'
+                        valign: 'middle'
+                    
+                    # Price
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(50)
+                        spacing: dp(5)
+                        Label:
+                            text: '$9.99'
+                            color: 0.3, 0.98, 0.6, 1
+                            font_size: '32sp'
+                            bold: True
+                            halign: 'right'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '/month'
+                            color: 0.81, 0.82, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'bottom'
+                            text_size: self.size
+                            size_hint_x: 0.5
+                    
+                    Label:
+                        text: 'or $99.99/year (save 17%)'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '12sp'
+                        size_hint_y: None
+                        height: dp(20)
+                        halign: 'center'
+                        valign: 'middle'
+                    
+                    Widget:
+                        size_hint_y: None
+                        height: dp(10)
+                    
+                    # Features
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(280)
+                        spacing: dp(8)
+                        padding: dp(4), dp(0)
+                        
+                        Label:
+                            text: '* Everything in Pro'
+                            color: 0.3, 0.98, 0.6, 1
+                            font_size: '13sp'
+                            bold: True
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* AI-Powered Insights'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Team Collaboration'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Custom Themes'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Productivity Coach'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Export Reports (PDF)'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Multi-Device Sync'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Priority Support'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            text: '* Lifetime Updates'
+                            color: 1, 1, 1, 1
+                            font_size: '13sp'
+                            size_hint_y: None
+                            height: dp(28)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                    
+                    Widget:
+                        size_hint_y: 1
+                    
+                    # Subscribe button
+                    Button:
+                        text: 'Subscribe to Pro+'
+                        size_hint_y: None
+                        height: dp(50)
+                        background_normal: ''
+                        background_color: 0.3, 0.98, 0.6, 1
+                        color: 0, 0, 0, 1
+                        font_size: '16sp'
+                        bold: True
+                        on_release: app.subscribe_plan('pro_plus')
+                
+                # Bottom spacing
+                Widget:
+                    size_hint_y: None
+                    height: dp(20)
+

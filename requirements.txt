@@ -1,0 +1,45 @@
+# GUI Framework
+Kivy==2.3.1
+kivymd==1.1.1
+
+# Kivy Dependencies
+kivy-deps.angle==0.4.0
+kivy-deps.glew==0.3.1
+kivy-deps.gstreamer==0.3.4
+kivy-deps.sdl2==0.8.0
+cython==3.1.6
+docutils==0.20.1
+
+# AI Assistant
+deepseek==1.0.0
+
+# Voice Recognition & Text-to-Speech
+SpeechRecognition==3.14.4
+PyAudio==0.2.14
+pyttsx3==2.99
+
+# Graph Generation
+matplotlib==3.10.7
+numpy==1.26.4
+pandas==2.0.3
+pillow==12.0.0
+
+# System Notifications
+plyer==2.1.0
+
+# Google Calendar Integration
+google-auth==2.41.1
+google-auth-oauthlib==1.2.2
+google-api-python-client==2.184.0
+google-api-core==2.26.0
+googleapis-common-protos==1.70.0
+
+# Additional Dependencies
+requests==2.31.0
+httpx==0.28.1
+httpcore==1.0.9
+certifi==2023.5.7
+charset-normalizer==3.2.0
+idna==3.4
+urllib3==1.26.20
+

@@ -1,0 +1,342 @@
+#:import utils kivy.utils
+#:import dp kivy.metrics.dp
+
+<NotificationSettingsScreen@Screen>:
+    name: 'notification_settings'
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        # Header with back button
+        BoxLayout:
+            size_hint_y: None
+            height: dp(64)
+            padding: dp(16), dp(12)
+            spacing: dp(12)
+            Button:
+                text: '< Back'
+                size_hint_x: None
+                width: dp(90)
+                background_normal: ''
+                background_color: utils.get_color_from_hex('#2d2d48')
+                color: 1, 1, 1, 1
+                on_release: app.back_to_profile()
+            Label:
+                text: 'Notification Settings'
+                color: 1, 1, 1, 1
+                font_size: '20sp'
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Widget:
+                size_hint_x: None
+                width: dp(48)
+        
+        # Scrollable settings
+        ScrollView:
+            do_scroll_x: False
+            bar_color: 1, 1, 1, .2
+            bar_inactive_color: 1, 1, 1, .1
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(20)
+                spacing: dp(16)
+                
+                Label:
+                    text: 'Manage your notification preferences'
+                    color: 0.81, 0.82, 1, 1
+                    font_size: '14sp'
+                    size_hint_y: None
+                    height: dp(24)
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                
+                # Focus Notifications Card
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: 'Focus Notifications'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    # Session Reminders
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(12)
+                        Label:
+                            text: 'Focus Session Reminders'
+                            color: 1, 1, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        CheckBox:
+                            id: session_reminders
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            active: True
+                            on_active: app.toggle_notification('session_reminders', self.active)
+                    
+                    # Break Reminders
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(12)
+                        Label:
+                            text: 'Break Reminders'
+                            color: 1, 1, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        CheckBox:
+                            id: break_reminders
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            active: True
+                            on_active: app.toggle_notification('break_reminders', self.active)
+                    
+                    # Daily Goals
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(12)
+                        Label:
+                            text: 'Daily Goal Reminders'
+                            color: 1, 1, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        CheckBox:
+                            id: daily_goals
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            active: True
+                            on_active: app.toggle_notification('daily_goals', self.active)
+                
+                # Progress Notifications Card
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: 'Progress Notifications'
+                        color: 0.66, 0.55, 0.98, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    # Streak Alerts
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(12)
+                        Label:
+                            text: 'Streak Alerts'
+                            color: 1, 1, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        CheckBox:
+                            id: streak_alerts
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            active: True
+                            on_active: app.toggle_notification('streak_alerts', self.active)
+                    
+                    # Task Deadlines
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(12)
+                        Label:
+                            text: 'Task Deadline Alerts'
+                            color: 1, 1, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        CheckBox:
+                            id: task_deadlines
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            active: True
+                            on_active: app.toggle_notification('task_deadlines', self.active)
+                    
+                    # Weekly Summary
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(12)
+                        Label:
+                            text: 'Weekly Progress Summary'
+                            color: 1, 1, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        CheckBox:
+                            id: weekly_summary
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            active: False
+                            on_active: app.toggle_notification('weekly_summary', self.active)
+                    
+                    # Achievements
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(12)
+                        Label:
+                            text: 'Achievement Notifications'
+                            color: 1, 1, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        CheckBox:
+                            id: achievements
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            active: True
+                            on_active: app.toggle_notification('achievements', self.active)
+                
+                # Sound Settings Card
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: 'Sound & Quiet Hours'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    # Notification Sound
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(12)
+                        Label:
+                            text: 'Notification Sound'
+                            color: 1, 1, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        CheckBox:
+                            id: notification_sound
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            active: True
+                            on_active: app.toggle_notification('notification_sound', self.active)
+                    
+                    # Quiet Hours Toggle
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(12)
+                        Label:
+                            text: 'Enable Quiet Hours'
+                            color: 1, 1, 1, 1
+                            font_size: '14sp'
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        CheckBox:
+                            id: quiet_hours_enabled
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            active: False
+                            on_active: app.toggle_notification('quiet_hours_enabled', self.active)
+                    
+                    Label:
+                        text: 'Quiet Hours: 10:00 PM - 8:00 AM'
+                        color: 0.81, 0.82, 1, 1
+                        font_size: '12sp'
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                
+                # Test Notification Button
+                Button:
+                    text: 'Test Notification'
+                    size_hint_y: None
+                    height: dp(50)
+                    background_normal: ''
+                    background_color: utils.get_color_from_hex('#3EE68F')
+                    color: 0, 0, 0, 1
+                    font_size: '16sp'
+                    bold: True
+                    on_release: app.test_notification()
+

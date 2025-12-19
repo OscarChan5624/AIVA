@@ -1,0 +1,429 @@
+#:import utils kivy.utils
+#:import dp kivy.metrics.dp
+
+<TermsConditionsScreen@Screen>:
+    name: 'terms_conditions'
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        # Header with back button
+        BoxLayout:
+            size_hint_y: None
+            height: dp(64)
+            padding: dp(16), dp(12)
+            spacing: dp(12)
+            Button:
+                text: '< Back'
+                size_hint_x: None
+                width: dp(90)
+                background_normal: ''
+                background_color: utils.get_color_from_hex('#2d2d48')
+                color: 1, 1, 1, 1
+                on_release: app.back_to_profile()
+            Label:
+                text: 'Terms & Conditions'
+                color: 1, 1, 1, 1
+                font_size: '20sp'
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Widget:
+                size_hint_x: None
+                width: dp(48)
+        
+        # Scrollable content
+        ScrollView:
+            do_scroll_x: False
+            bar_color: 1, 1, 1, .2
+            bar_inactive_color: 1, 1, 1, .1
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(20)
+                spacing: dp(16)
+                
+                # Last Updated
+                Label:
+                    text: 'Last Updated: November 26, 2025'
+                    color: 0.81, 0.82, 1, 1
+                    font_size: '12sp'
+                    size_hint_y: None
+                    height: dp(24)
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                
+                # Introduction
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '1. Introduction'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'Welcome to Time Manager. By using our application, you agree to be bound by these Terms and Conditions. Please read them carefully before using the app. If you do not agree with any part of these terms, you should not use our application.'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                        markup: True
+                
+                # Acceptance of Terms
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '2. Acceptance of Terms'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'By creating an account or using Time Manager, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions. We reserve the right to modify these terms at any time, and your continued use of the app constitutes acceptance of any changes.'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                
+                # User Account
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '3. User Account'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'You are responsible for maintaining the confidentiality of your account credentials. You agree to accept responsibility for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account or any other breach of security.'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                
+                # Use of Service
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '4. Use of Service'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'Time Manager is a productivity application designed to help you manage your time and tasks. You agree to use the app only for lawful purposes and in accordance with these Terms. You must not use the app in any way that could damage, disable, or impair the service.'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                
+                # Data and Privacy
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '5. Data and Privacy'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'We collect and process your personal data in accordance with our Privacy Policy. By using Time Manager, you consent to such processing and warrant that all data provided by you is accurate. Your data is stored locally on your device and may be backed up to cloud services if you enable that feature.'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                
+                # Subscription and Payment
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '6. Subscription and Payment'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'Time Manager offers both free and paid subscription plans. Paid subscriptions are billed on a recurring basis. You may cancel your subscription at any time, but no refunds will be provided for partial subscription periods. Prices are subject to change with notice.'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                
+                # Intellectual Property
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '7. Intellectual Property'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'All content, features, and functionality of Time Manager are owned by us and are protected by international copyright, trademark, and other intellectual property laws. You may not reproduce, distribute, or create derivative works without our express written permission.'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                
+                # Limitation of Liability
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '8. Limitation of Liability'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'Time Manager is provided "as is" without warranties of any kind. We shall not be liable for any indirect, incidental, special, or consequential damages arising out of your use or inability to use the application. Our total liability shall not exceed the amount paid by you for the service.'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                
+                # Termination
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '9. Termination'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'We reserve the right to terminate or suspend your account and access to the service at our sole discretion, without notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties, or for any other reason.'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                
+                # Contact Information
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: '10. Contact Information'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '16sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(30)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    
+                    Label:
+                        text: 'If you have any questions about these Terms and Conditions, please contact us at:\n\nEmail: support@timemanager.com\nWebsite: www.timemanager.com\n\nThank you for using Time Manager!'
+                        color: 1, 1, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width - dp(40), None
+                
+                # Bottom spacing
+                Widget:
+                    size_hint_y: None
+                    height: dp(20)
+

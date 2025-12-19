@@ -1,0 +1,124 @@
+#:import utils kivy.utils
+#:import dp kivy.metrics.dp
+
+<LoginScreen@Screen>:
+    name: 'login'
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        BoxLayout:
+            orientation: 'vertical'
+            padding: dp(0), dp(10), dp(0), dp(20)  # left, top, right, bottom
+            spacing: dp(0)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.32}
+            size_hint: 0.85, None
+            height: dp(370)
+            
+            # Logo space (reserved for your logo image)
+            Image:
+                id: app_logo
+                source: 'logo.png'
+                size_hint: 1, None
+                height: dp(280)
+                pos_hint: {'center_x': 0.5}
+                allow_stretch: True
+                keep_ratio: True
+            
+            # Login form card
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: dp(260)
+                padding: dp(20)
+                spacing: dp(16)
+                canvas.before:
+                    Color:
+                        rgba: utils.get_color_from_hex('#262642')
+                    RoundedRectangle:
+                        radius: [20,]
+                        pos: self.pos
+                        size: self.size
+                
+                Label:
+                    text: 'Username or Email'
+                    color: 1, 1, 1, 1
+                    font_size: '14sp'
+                    size_hint_y: None
+                    height: dp(22)
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                
+                TextInput:
+                    id: login_username
+                    hint_text: 'Enter username or email'
+                    size_hint_y: None
+                    height: dp(44)
+                    multiline: False
+                    background_normal: ''
+                    background_color: utils.get_color_from_hex('#1b1b30')
+                    foreground_color: 1, 1, 1, 1
+                    cursor_color: 0.3, 0.98, 0.6, 1
+                    padding: dp(10), dp(12)
+                
+                Label:
+                    text: 'Password'
+                    color: 1, 1, 1, 1
+                    font_size: '14sp'
+                    size_hint_y: None
+                    height: dp(22)
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                
+                TextInput:
+                    id: login_password
+                    hint_text: 'Enter password'
+                    size_hint_y: None
+                    height: dp(44)
+                    multiline: False
+                    password: True
+                    background_normal: ''
+                    background_color: utils.get_color_from_hex('#1b1b30')
+                    foreground_color: 1, 1, 1, 1
+                    cursor_color: 0.3, 0.98, 0.6, 1
+                    padding: dp(10), dp(12)
+                
+                Label:
+                    id: login_error
+                    text: ''
+                    color: 1, 0.3, 0.3, 1
+                    font_size: '12sp'
+                    size_hint_y: None
+                    height: dp(20)
+                    halign: 'center'
+                    valign: 'middle'
+            
+            # Login button
+            Button:
+                text: 'Login'
+                size_hint_y: None
+                height: dp(50)
+                background_normal: ''
+                background_color: utils.get_color_from_hex('#3EE68F')
+                color: 0, 0, 0, 1
+                font_size: '16sp'
+                bold: True
+                on_release: app.attempt_login()
+            
+            # Skip login (for first time setup)
+            #Button:
+                #text: 'Skip Login (First Time)'
+                #size_hint_y: None
+                #height: dp(40)
+                #background_normal: ''
+                #background_color: 0, 0, 0, 0
+                #color: 0.81, 0.82, 1, 1
+                #font_size: '13sp'
+                #on_release: app.skip_login()
+

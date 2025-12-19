@@ -1,0 +1,161 @@
+#:import utils kivy.utils
+#:import dp kivy.metrics.dp
+
+<VoiceChatPopup@Popup>:
+    title: ''
+    separator_height: 0
+    size_hint: 0.9, 0.85
+    background: ''
+    background_color: 0, 0, 0, 0
+    auto_dismiss: True
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(0)
+        spacing: dp(0)
+        
+        # Header with close button
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(16)
+            spacing: dp(12)
+            canvas.before:
+                Color:
+                    rgba: utils.get_color_from_hex('#262642')
+                RoundedRectangle:
+                    radius: [20, 20, 0, 0]
+                    pos: self.pos
+                    size: self.size
+            
+            Label:
+                text: 'Voice Assistant'
+                color: 0.3, 0.98, 0.6, 1
+                font_size: '18sp'
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            
+            Button:
+                text: 'X'
+                size_hint: None, None
+                size: dp(40), dp(40)
+                background_normal: ''
+                background_color: 0.8, 0.2, 0.2, 1
+                color: 1, 1, 1, 1
+                font_size: '18sp'
+                bold: True
+                on_release: root.dismiss()
+        
+        # Chat messages area (scrollable)
+        ScrollView:
+            id: chat_scroll
+            do_scroll_x: False
+            bar_color: 1, 1, 1, .2
+            bar_inactive_color: 1, 1, 1, .1
+            canvas.before:
+                Color:
+                    rgba: utils.get_color_from_hex('#1a1a2e')
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            
+            BoxLayout:
+                id: chat_messages
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(16)
+                spacing: dp(12)
+        
+        # Bottom controls bar
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(120)
+            padding: dp(16)
+            spacing: dp(8)
+            canvas.before:
+                Color:
+                    rgba: utils.get_color_from_hex('#262642')
+                RoundedRectangle:
+                    radius: [0, 0, 20, 20]
+                    pos: self.pos
+                    size: self.size
+            
+            # Status label
+            Label:
+                id: voice_status
+                text: 'Type or hold mic to speak'
+                color: 0.81, 0.82, 1, 1
+                font_size: '13sp'
+                size_hint_y: None
+                height: dp(20)
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            
+            # Input row (text input + send button + mic button)
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: dp(48)
+                spacing: dp(10)
+                
+                # Text input field
+                TextInput:
+                    id: message_input
+                    hint_text: 'Type your message...'
+                    multiline: False
+                    size_hint_x: 0.7
+                    background_color: 0.2, 0.2, 0.3, 1
+                    foreground_color: 1, 1, 1, 1
+                    hint_text_color: 0.6, 0.6, 0.7, 1
+                    cursor_color: 0.3, 0.98, 0.6, 1
+                    padding: dp(12), dp(10)
+                    font_size: '15sp'
+                    on_text_validate: app.send_text_message(self.text)
+                
+                # Send button (Enter text)
+                Button:
+                    text: 'Enter'
+                    size_hint: None, None
+                    size: dp(60), dp(44)
+                    background_normal: ''
+                    background_color: 0.66, 0.55, 0.98, 1
+                    color: 1, 1, 1, 1
+                    font_size: '12sp'
+                    bold: True
+                    on_release: app.send_text_message(message_input.text)
+                    canvas.before:
+                        Color:
+                            rgba: self.background_color if self.state == 'normal' else (0.56, 0.45, 0.88, 1)
+                        RoundedRectangle:
+                            radius: [8,]
+                            pos: self.pos
+                            size: self.size
+                
+                # Mic button (circular green button - push to talk)
+                FloatLayout:
+                    size_hint: None, None
+                    size: dp(44), dp(44)
+                    on_touch_down: app.start_push_to_talk() if self.collide_point(*args[1].pos) else None
+                    on_touch_up: app.stop_push_to_talk() if self.collide_point(*args[1].pos) else None
+                    
+                    Widget:
+                        canvas.before:
+                            Color:
+                                rgba: (0.3, 0.98, 0.6, 1) if not app.voice_handler.is_listening else (0.98, 0.3, 0.3, 1)
+                            Ellipse:
+                                pos: self.parent.pos
+                                size: self.parent.size
+                    
+                    Image:
+                        source: 'mic.png'
+                        size_hint: None, None
+                        size: dp(24), dp(24)
+                        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+                        allow_stretch: True
+                        keep_ratio: True
+
