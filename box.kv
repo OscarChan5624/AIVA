@@ -1,0 +1,36 @@
+#:import utils kivy.utils
+
+<MyLayout>
+    BoxLayout:
+        orientation: "vertical"
+        size: root.height, root.width
+
+        padding: 50
+        spacing: 20
+
+        Button:
+            text: "Hello World"
+
+        RoundedButton:
+            text: "Goodbye World!"
+            pos_hint: {'center_x': .5}
+            size_hint: (1, .3)
+            #background_color: (0,1,1,1)
+            #background_normal: ''
+            on_press: print("Goodbye")
+
+<RoundedButton@Button>
+    background_color: (0,0,0,0)
+    background_normal: ''
+    canvas.before:
+        Color:
+            rgba: (0,1,1,1)
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: [58]
+
+            
+
+
+       

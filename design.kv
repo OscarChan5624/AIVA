@@ -1,0 +1,2790 @@
+#:import utils kivy.utils
+#:import dp kivy.metrics.dp
+#:import ButtonBehavior kivy.uix.behaviors.ButtonBehavior
+#:include ai_insights.kv
+
+<CircularAvatar@Widget>:
+    source: ''
+    size_hint: None, None
+    size: '40dp', '40dp'
+    canvas:
+        StencilPush
+        Ellipse:
+            pos: self.pos
+            size: self.size
+        StencilUse
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: root.source
+        StencilUnUse
+        StencilPop
+        Color:
+            rgba: 1, 1, 1, .15
+        Line:
+            circle: self.center_x, self.center_y, self.width/2, 0, 360
+            width: 1.2
+
+<IconButton@ButtonBehavior+Image>:
+    source: ''
+    size_hint: None, None
+    size: '24dp', '24dp'
+    allow_stretch: False
+    keep_ratio: True
+
+<NavItem@ButtonBehavior+BoxLayout>:
+    icon: ''
+    text: ''
+    single_line: False
+    orientation: 'vertical'
+    padding: 0
+    spacing: 2
+    size_hint: 1, 1
+    Image:
+        source: root.icon
+        size_hint_y: 0.6
+        allow_stretch: False
+        keep_ratio: True
+    Label:
+        text: root.text
+        color: 1,1,1,1
+        font_size: '12sp'
+        size_hint_y: 0.4
+        halign: 'center'
+        valign: 'middle'
+        text_size: (None, None) if root.single_line else self.size
+        shorten: True
+        shorten_from: 'right'
+
+# Duplicate safety (ensure only one definition exists above)
+
+<LabelButton@ButtonBehavior+Label>:
+    # simple clickable label
+    halign: 'center'
+    valign: 'middle'
+    text_size: self.size
+
+<TabButton@Button>:
+    active: False
+    background_normal: ''
+    background_color: (0.3, 0.98, 0.6, 1) if self.active else (0.15, 0.15, 0.26, 1)
+    color: (0, 0, 0, 1) if self.active else (1, 1, 1, 1)
+
+<ClickableCard@ButtonBehavior+BoxLayout>:
+    background_color: 0, 0, 0, 0
+    canvas.before:
+        Color:
+            rgba: utils.get_color_from_hex('#262642')
+        RoundedRectangle:
+            radius: [16,]
+            pos: self.pos
+            size: self.size
+
+<TaskCard>:
+    task_id: 0
+    task_title: "Task"
+    task_priority: "medium"
+    size_hint_y: None
+    height: "70dp"
+    padding: 12
+    spacing: 12
+    canvas.before:
+        Color:
+            rgba: utils.get_color_from_hex('#262642')
+        RoundedRectangle:
+            radius: [16,]
+            pos: self.pos
+            size: self.size
+    
+    # Priority indicator (colored dot) - will be drawn programmatically
+    Widget:
+        id: priority_dot
+        size_hint: None, None
+        size: "8dp", "8dp"
+    
+    CheckBox:
+        size_hint: None, None
+        size: "24dp", "24dp"
+        on_active: app.toggle_task(root.task_id)
+    
+    Label:
+        text: root.task_title
+        color: 1,1,1,1
+        font_size: "15sp"
+        halign: "left"
+        valign: "middle"
+        text_size: self.size
+    
+    Button:
+        text: "×"
+        size_hint: None, None
+        size: "32dp", "32dp"
+        background_normal: ''
+        background_color: 0.8, 0.2, 0.2, 0.7
+        color: 1, 1, 1, 1
+        font_size: "20sp"
+        on_release: app.delete_task_by_id(root.task_id)
+
+<ScheduleItemCard@BoxLayout>:
+    item_title: ""
+    item_time: ""
+    item_date: ""
+    size_hint_y: None
+    height: "80dp"
+    padding: 12
+    spacing: 12
+    canvas.before:
+        Color:
+            rgba: utils.get_color_from_hex('#262642')
+        RoundedRectangle:
+            radius: [12,]
+            pos: self.pos
+            size: self.size
+    
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 4
+        Label:
+            text: root.item_title
+            color: 1,1,1,1
+            font_size: "16sp"
+            bold: True
+            halign: "left"
+            valign: "middle"
+            text_size: self.size
+        Label:
+            text: root.item_time + " • " + root.item_date
+            color: utils.get_color_from_hex('#cfd2ff')
+            font_size: "13sp"
+            halign: "left"
+            valign: "middle"
+            text_size: self.size
+
+<SchedulePopup@Popup>:
+    title: ''
+    size_hint: 0.92, 0.75
+    auto_dismiss: True
+    background_color: 0.06, 0.06, 0.14, 0.95
+    separator_height: 0
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(16)
+        spacing: dp(12)
+        
+        # Header
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            Label:
+                text: 'Today\'s Schedule'
+                color: 1, 1, 1, 1
+                font_size: '20sp'
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Label:
+                id: schedule_count_label
+                text: '0 items'
+                color: 0.3, 0.98, 0.6, 1
+                font_size: '14sp'
+                size_hint_x: None
+                width: self.texture_size[0] + dp(10)
+                halign: 'right'
+                valign: 'middle'
+        
+        # Scrollable schedule list
+        ScrollView:
+            do_scroll_x: False
+            bar_color: 1, 1, 1, 0.3
+            bar_inactive_color: 1, 1, 1, 0.1
+            BoxLayout:
+                id: schedule_container
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(8)
+                padding: 0, dp(4)
+        
+        # Close button
+        Button:
+            text: 'Close'
+            size_hint_y: None
+            height: dp(44)
+            background_normal: ''
+            background_color: 0.2, 0.2, 0.35, 1
+            color: 1, 1, 1, 1
+            on_release: root.dismiss()
+
+<TasksPopup@Popup>:
+    title: ''
+    size_hint: 0.92, 0.8
+    auto_dismiss: True
+    background_color: 0.06, 0.06, 0.14, 0.95
+    separator_height: 0
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(16)
+        spacing: dp(12)
+        
+        # Header
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            Label:
+                text: 'My Tasks'
+                color: 1, 1, 1, 1
+                font_size: '20sp'
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Label:
+                id: task_count_label
+                text: '0 tasks'
+                color: 0.3, 0.98, 0.6, 1
+                font_size: '14sp'
+                size_hint_x: None
+                width: self.texture_size[0] + dp(10)
+                halign: 'right'
+                valign: 'middle'
+        
+        # Scrollable task list
+        ScrollView:
+            do_scroll_x: False
+            bar_color: 1, 1, 1, 0.3
+            bar_inactive_color: 1, 1, 1, 0.1
+            BoxLayout:
+                id: popup_tasks_container
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(8)
+                padding: 0, dp(4)
+        
+        # Quick add section
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(90)
+            spacing: dp(8)
+            padding: 0, dp(8)
+            
+            # Priority selector
+            BoxLayout:
+                size_hint_y: None
+                height: dp(30)
+                spacing: dp(6)
+                Label:
+                    text: 'Priority:'
+                    size_hint_x: None
+                    width: dp(60)
+                    color: 0.8, 0.8, 1, 1
+                    font_size: '13sp'
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                ToggleButton:
+                    id: priority_high
+                    text: 'High'
+                    size_hint_x: 1
+                    size_hint_y: None
+                    height: dp(28)
+                    background_normal: ''
+                    background_down: ''
+                    background_color: (0.98, 0.3, 0.3, 1) if self.state == 'down' else (0.4, 0.2, 0.2, 1)
+                    color: 1, 1, 1, 1
+                    font_size: '12sp'
+                    group: 'priority'
+                    state: 'normal'
+                    allow_no_selection: False
+                ToggleButton:
+                    id: priority_medium
+                    text: 'Medium'
+                    size_hint_x: 1
+                    size_hint_y: None
+                    height: dp(28)
+                    background_normal: ''
+                    background_down: ''
+                    background_color: (1, 0.8, 0.2, 1) if self.state == 'down' else (0.4, 0.35, 0.2, 1)
+                    color: 1, 1, 1, 1
+                    font_size: '12sp'
+                    group: 'priority'
+                    state: 'down'
+                    allow_no_selection: False
+                ToggleButton:
+                    id: priority_low
+                    text: 'Low'
+                    size_hint_x: 1
+                    size_hint_y: None
+                    height: dp(28)
+                    background_normal: ''
+                    background_down: ''
+                    background_color: (0.3, 0.98, 0.6, 1) if self.state == 'down' else (0.2, 0.4, 0.3, 1)
+                    color: 1, 1, 1, 1
+                    font_size: '12sp'
+                    group: 'priority'
+                    state: 'normal'
+                    allow_no_selection: False
+            
+            # Task input and add button
+            BoxLayout:
+                size_hint_y: None
+                height: dp(50)
+                spacing: dp(8)
+                TextInput:
+                    id: popup_task_input
+                    hint_text: 'Add a new task...'
+                    multiline: False
+                    background_normal: ''
+                    background_color: 0.15, 0.15, 0.26, 1
+                    foreground_color: 1, 1, 1, 1
+                    cursor_color: 0.3, 0.98, 0.6, 1
+                    hint_text_color: 0.5, 0.5, 0.6, 1
+                    padding: dp(12), dp(10)
+                    font_size: '15sp'
+                    on_text_validate: app.add_task_from_popup(popup_task_input.text, root); popup_task_input.text = ''
+                Button:
+                    text: 'Add'
+                    size_hint_x: None
+                    width: dp(70)
+                    background_normal: ''
+                    background_color: 0.3, 0.98, 0.6, 1
+                    color: 0, 0, 0, 1
+                    font_size: '15sp'
+                    bold: True
+                    on_release: app.add_task_from_popup(popup_task_input.text, root); popup_task_input.text = ''
+        
+        # Close button
+        Button:
+            text: 'Close'
+            size_hint_y: None
+            height: dp(44)
+            background_normal: ''
+            background_color: 0.2, 0.2, 0.35, 1
+            color: 1, 1, 1, 1
+            on_release: root.dismiss()
+
+<SessionCompletePopup@Popup>:
+    title: 'Session Complete!'
+    size_hint: 0.8, 0.3
+    auto_dismiss: True
+    message: ''
+    Label:
+        text: root.message
+        halign: 'center'
+        valign: 'middle'
+        text_size: self.size
+        color: 1, 1, 1, 1
+
+<TimePickerPopup@Popup>:
+    title: 'Set Duration'
+    size_hint: None, None
+    size: dp(320), dp(240)
+    auto_dismiss: False
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(12)
+        spacing: dp(10)
+        GridLayout:
+            cols: 2
+            spacing: dp(8)
+            size_hint_y: None
+            height: dp(120)
+            Label:
+                text: 'Hours'
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+                color: 1,1,1,1
+            Label:
+                text: str(int(hours.value))
+                halign: 'right'
+                valign: 'middle'
+                text_size: self.size
+                color: 1,1,1,1
+            Slider:
+                id: hours
+                min: 0
+                max: 12
+                step: 1
+                value: 0
+                cursor_size: dp(20), dp(20)
+            Widget:
+                size_hint_x: None
+                width: 0
+            Label:
+                text: 'Minutes'
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+                color: 1,1,1,1
+            Label:
+                text: str(int(minutes.value))
+                halign: 'right'
+                valign: 'middle'
+                text_size: self.size
+                color: 1,1,1,1
+            Slider:
+                id: minutes
+                min: 0
+                max: 59
+                step: 1
+                value: 0
+                cursor_size: dp(20), dp(20)
+            Widget:
+                size_hint_x: None
+                width: 0
+        BoxLayout:
+            size_hint_y: None
+            height: dp(44)
+            spacing: dp(8)
+            Button:
+                text: 'Cancel'
+                background_normal: ''
+                background_color: .3,.3,.6,1
+                on_release: root.dismiss()
+            Button:
+                text: 'Set'
+                background_normal: ''
+                background_color: .2,.8,.6,1
+                on_release: app.apply_time_from_picker(root)
+
+<StatsPopup@Popup>:
+    title: ''
+    size_hint: 0.9, 0.75
+    auto_dismiss: True
+    background_color: 0.06, 0.06, 0.14, 0.95
+    separator_height: 0
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(16)
+        spacing: dp(12)
+        
+        # Title
+        Label:
+            text: 'Focus Statistics'
+            color: 1, 1, 1, 1
+            font_size: '20sp'
+            bold: True
+            size_hint_y: None
+            height: dp(35)
+        
+        # Tab buttons
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            spacing: dp(8)
+            TabButton:
+                id: tab_stats
+                text: 'Stats'
+                active: True
+                on_release: app.show_stats_tab(root)
+            TabButton:
+                id: tab_weekly
+                text: 'Weekly'
+                on_release: app.show_weekly_tab(root)
+            TabButton:
+                id: tab_monthly
+                text: 'Monthly'
+                on_release: app.show_monthly_tab(root)
+        
+        # Content area (switches between stats and graphs)
+        FloatLayout:
+            id: content_area
+            
+            # Stats view (default)
+            BoxLayout:
+                id: stats_view
+                orientation: 'vertical'
+                spacing: dp(12)
+                size_hint: 1, 1
+                pos_hint: {'x': 0, 'y': 0}
+                
+                # Daily stats section
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: dp(12)
+                    spacing: dp(6)
+                    size_hint_y: None
+                    height: dp(100)
+                    canvas.before:
+                        Color:
+                            rgba: 0.15, 0.15, 0.26, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [12,]
+                    Label:
+                        id: daily_header
+                        text: 'Today'
+                        color: 0.3, 0.98, 0.6, 1
+                        font_size: '15sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(25)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.width, None
+                    Label:
+                        id: daily_stats
+                        text: 'Pomodoros: 0\\nFocus Time: 0 minutes'
+                        color: 0.81, 0.82, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: dp(50)
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+                
+                # All-time stats section
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: dp(12)
+                    spacing: dp(6)
+                    size_hint_y: None
+                    height: dp(100)
+                    canvas.before:
+                        Color:
+                            rgba: 0.15, 0.15, 0.26, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [12,]
+                    Label:
+                        id: alltime_header
+                        text: 'All-Time'
+                        color: 0.66, 0.55, 0.98, 1
+                        font_size: '15sp'
+                        bold: True
+                        size_hint_y: None
+                        height: dp(25)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.width, None
+                    Label:
+                        id: alltime_stats
+                        text: 'Pomodoros: 0\\nFocus Time: 0 minutes'
+                        color: 0.81, 0.82, 1, 1
+                        font_size: '13sp'
+                        size_hint_y: None
+                        height: dp(50)
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.width, None
+                
+                Widget:
+            
+            # Graph view (hidden by default, overlays stats view)
+            ScrollView:
+                id: graph_view
+                size_hint: 1, 1
+                pos_hint: {'x': 0, 'y': 0}
+                opacity: 0
+                disabled: True
+                do_scroll_x: False
+                do_scroll_y: True
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(8), 0
+                    Image:
+                        id: graph_image
+                        allow_stretch: True
+                        keep_ratio: True
+                        size_hint_y: None
+                        height: dp(400)
+                        pos_hint: {'center_x': 0.5}
+        
+        # Close button
+        Button:
+            text: 'Close'
+            size_hint_y: None
+            height: dp(44)
+            background_normal: ''
+            background_color: 0.3, 0.98, 0.6, 1
+            on_release: root.dismiss()
+
+<CalendarDayButton@Button>:
+    day: 0
+    is_today: False
+    day_date: ""  # Store the date as ISO string
+    has_events: False  # Indicates if this date has events
+    has_recurring_events: False  # Indicates if this date has recurring events
+    background_normal: ''
+    background_color: 0, 0, 0, 0
+    color: 1, 1, 1, 1
+    font_size: '14sp'
+    bold: True if self.is_today else False
+    halign: 'center'
+    valign: 'middle'
+    text_size: self.size
+    on_release: app.show_day_events(self.day_date) if self.day_date else None
+    canvas.before:
+        # Highlight circle for today
+        Color:
+            rgba: (0.2, 0.5, 0.95, 1) if self.is_today else (0, 0, 0, 0)
+        Ellipse:
+            pos: self.center_x - dp(16), self.center_y - dp(16)
+            size: dp(32), dp(32)
+    canvas.after:
+        # Red dot indicator for dates with regular events
+        Color:
+            rgba: (0.9, 0.2, 0.2, 1) if self.has_events else (0, 0, 0, 0)
+        Ellipse:
+            # Center if no recurring events, otherwise left side
+            pos: (self.center_x - dp(8) if self.has_recurring_events else self.center_x - dp(3)), self.y + dp(2)
+            size: dp(6), dp(6)
+        # Purple dot indicator for dates with recurring events
+        Color:
+            rgba: (0.8, 0.4, 0.9, 1) if self.has_recurring_events else (0, 0, 0, 0)
+        Ellipse:
+            # Center if no regular events, otherwise right side
+            pos: (self.center_x + dp(2) if self.has_events else self.center_x - dp(3)), self.y + dp(2)
+            size: dp(6), dp(6)
+
+<EventListItem@ButtonBehavior+BoxLayout>:
+    event_id: 0
+    event_title: ""
+    event_time: ""
+    event_date: ""
+    event_source: "local"
+    event_is_recurring: False
+    size_hint_y: None
+    height: "70dp"
+    padding: 12
+    spacing: 12
+    canvas.before:
+        Color:
+            rgba: utils.get_color_from_hex('#262642')
+        RoundedRectangle:
+            radius: [12,]
+            pos: self.pos
+            size: self.size
+    on_release: app.open_event_actions_popup(root.event_id, root.event_title)
+    
+    # Color indicator based on source and recurring status
+    Widget:
+        size_hint_x: None
+        width: dp(4)
+        canvas.before:
+            Color:
+                rgba: (0.8, 0.4, 0.9, 1) if root.event_is_recurring else ((0.3, 0.98, 0.6, 1) if root.event_source == 'local' else (0.4, 0.6, 0.98, 1))
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 4
+        size_hint_x: 1
+        Label:
+            text: root.event_title
+            color: 1,1,1,1
+            font_size: "15sp"
+            bold: True
+            halign: "left"
+            valign: "middle"
+            text_size: self.size
+        Label:
+            text: root.event_time if root.event_date == "" else (root.event_time + " • " + root.event_date)
+            color: utils.get_color_from_hex('#cfd2ff')
+            font_size: "12sp"
+            halign: "left"
+            valign: "middle"
+            text_size: self.size
+
+<EventActionsPopup@Popup>:
+    event_id: 0
+    event_title: ""
+    title: ""
+    title_size: 0
+    size_hint: 0.7, 0.35
+    auto_dismiss: True
+    background_color: 0.06, 0.06, 0.14, 0.95
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(20)
+        spacing: dp(16)
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        # Event title
+        Label:
+            text: root.event_title
+            color: 1, 1, 1, 1
+            font_size: "18sp"
+            bold: True
+            size_hint_y: None
+            height: dp(40)
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+        
+        # Buttons
+        BoxLayout:
+            orientation: "vertical"
+            spacing: dp(12)
+            size_hint_y: 1
+            Button:
+                text: "Edit"
+                size_hint_y: None
+                height: dp(50)
+                background_normal: ''
+                background_color: 0.3, 0.98, 0.6, 1
+                color: 0, 0, 0, 1
+                font_size: "16sp"
+                on_release: app.edit_event_from_day_popup(root.event_id); root.dismiss()
+            Button:
+                text: "Delete"
+                size_hint_y: None
+                height: dp(50)
+                background_normal: ''
+                background_color: 0.8, 0.2, 0.2, 1
+                color: 1, 1, 1, 1
+                font_size: "16sp"
+                on_release: app.delete_event_from_day_popup(root.event_id); root.dismiss()
+            Button:
+                text: "Cancel"
+                size_hint_y: None
+                height: dp(50)
+                background_normal: ''
+                background_color: 0.2, 0.2, 0.35, 1
+                color: 1, 1, 1, 1
+                font_size: "16sp"
+                on_release: root.dismiss()
+
+<DayEventsPopup@Popup>:
+    date_text: ""
+    title: ""
+    title_size: 0
+    size_hint: 0.85, 0.7
+    auto_dismiss: True
+    
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(16)
+        spacing: dp(12)
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        # Date header
+        Label:
+            text: "EVENTS"
+            color: 1, 1, 1, 1
+            font_size: "18sp"
+            bold: True
+            size_hint_y: None
+            height: "40dp"
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+        
+        # Events list
+        ScrollView:
+            id: day_events_scroll
+            do_scroll_x: False
+            bar_color: 1,1,1,.2
+            bar_inactive_color: 1,1,1,.1
+            BoxLayout:
+                id: day_events_container
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(8)
+        
+        # Close button
+        Button:
+            text: "Close"
+            size_hint_y: None
+            height: dp(44)
+            background_normal: ''
+            background_color: 0.3, 0.98, 0.6, 1
+            color: 0, 0, 0, 1
+            on_release: root.dismiss()
+
+<EventCreatePopup@Popup>:
+    title: ''
+    title_size: 0
+    size_hint: 0.9, 0.6
+    auto_dismiss: False
+    background_color: 0.06, 0.06, 0.14, 0.95
+    separator_height: 0
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(16)
+        
+        Label:
+            text: 'Event Title'
+            color: 1, 1, 1, 1
+            font_size: '16sp'
+            size_hint_y: None
+            height: dp(30)
+            halign: 'left'
+        
+        TextInput:
+            id: event_title_input
+            hint_text: 'Enter event title...'
+            multiline: False
+            background_normal: ''
+            background_color: 0.15, 0.15, 0.26, 1
+            foreground_color: 1, 1, 1, 1
+            cursor_color: 0.3, 0.98, 0.6, 1
+            padding: dp(12), dp(10)
+            font_size: '15sp'
+            size_hint_y: None
+            height: dp(50)
+        
+        Label:
+            text: 'Date'
+            color: 1, 1, 1, 1
+            font_size: '16sp'
+            size_hint_y: None
+            height: dp(30)
+            halign: 'left'
+        
+        Button:
+            id: event_date_button
+            text: 'Select Date'
+            size_hint_y: None
+            height: dp(50)
+            background_normal: ''
+            background_color: 0.15, 0.15, 0.26, 1
+            color: 1, 1, 1, 1
+            font_size: '15sp'
+            on_release: app.open_date_picker_for_event(root)
+        
+        Label:
+            text: 'Time'
+            color: 1, 1, 1, 1
+            font_size: '16sp'
+            size_hint_y: None
+            height: dp(30)
+            halign: 'left'
+        
+        Button:
+            id: event_time_button
+            text: 'Select Time'
+            size_hint_y: None
+            height: dp(50)
+            background_normal: ''
+            background_color: 0.15, 0.15, 0.26, 1
+            color: 1, 1, 1, 1
+            font_size: '15sp'
+            on_release: app.open_time_picker_for_event(root)
+        
+        # Recurring event toggle
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(40)
+            spacing: dp(12)
+            Label:
+                text: 'Repeat Weekly'
+                color: 1, 1, 1, 1
+                font_size: '16sp'
+                size_hint_x: 0.7
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            CheckBox:
+                id: event_recurring_checkbox
+                size_hint_x: None
+                width: dp(40)
+                active: False
+                on_active: app.on_recurring_toggle_changed(root, self.active)
+        
+        # Repeat days selection (shown when recurring is enabled)
+        BoxLayout:
+            id: repeat_days_container
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 0
+            opacity: 0
+            Label:
+                text: 'Repeat on:'
+                color: 1, 1, 1, 1
+                font_size: '14sp'
+                size_hint_y: None
+                height: dp(25)
+                halign: 'left'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: dp(35)
+                spacing: dp(4)
+                ToggleButton:
+                    id: day_mon
+                    text: 'Mon'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('0', self.state)
+                ToggleButton:
+                    id: day_tue
+                    text: 'Tue'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('1', self.state)
+                ToggleButton:
+                    id: day_wed
+                    text: 'Wed'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('2', self.state)
+                ToggleButton:
+                    id: day_thu
+                    text: 'Thu'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('3', self.state)
+                ToggleButton:
+                    id: day_fri
+                    text: 'Fri'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('4', self.state)
+                ToggleButton:
+                    id: day_sat
+                    text: 'Sat'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('5', self.state)
+                ToggleButton:
+                    id: day_sun
+                    text: 'Sun'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('6', self.state)
+        
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(12)
+            Button:
+                text: 'Cancel'
+                background_normal: ''
+                background_color: 0.2, 0.2, 0.35, 1
+                color: 1, 1, 1, 1
+                on_release: root.dismiss()
+            Button:
+                text: 'Create'
+                background_normal: ''
+                background_color: 0.3, 0.98, 0.6, 1
+                color: 0, 0, 0, 1
+                on_release: app.create_event_from_popup(root)
+
+<DatePickerPopup@Popup>:
+    title: ''
+    title_size: 0
+    selected_date: ""
+    size_hint: 0.85, 0.7
+    auto_dismiss: False
+    background_color: 0.06, 0.06, 0.14, 0.95
+    separator_height: 0
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(16)
+        spacing: dp(12)
+        
+        # Header with month/year navigation
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(12)
+            AnchorLayout:
+                anchor_x: 'left'
+                anchor_y: 'center'
+                size_hint_x: 1
+                size_hint_y: None
+                height: "40dp"
+                IconButton:
+                    source: 'backarrow.png'
+                    size_hint: None, None
+                    size: "40dp", "40dp"
+                    allow_stretch: True
+                    keep_ratio: True
+                    on_release: app.date_picker_prev_month()
+            Label:
+                id: date_picker_month_label
+                text: ""
+                color: 1, 1, 1, 1
+                font_size: "18sp"
+                bold: True
+                halign: "center"
+                valign: "middle"
+                text_size: dp(120), None
+                size_hint_x: None
+                size_hint_y: None
+                width: dp(120)
+                height: "40dp"
+            AnchorLayout:
+                anchor_x: 'right'
+                anchor_y: 'center'
+                size_hint_x: 1
+                size_hint_y: None
+                height: "40dp"
+                IconButton:
+                    source: 'forwardarrow.png'
+                    size_hint: None, None
+                    size: "40dp", "40dp"
+                    allow_stretch: True
+                    keep_ratio: True
+                    on_release: app.date_picker_next_month()
+        
+        # Calendar grid
+        ScrollView:
+            do_scroll_x: False
+            bar_color: 1,1,1,.2
+            bar_inactive_color: 1,1,1,.1
+            BoxLayout:
+                id: date_picker_calendar_grid
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(4)
+                padding: dp(8)
+        
+        # Buttons
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(12)
+            Button:
+                text: 'Cancel'
+                background_normal: ''
+                background_color: 0.2, 0.2, 0.35, 1
+                color: 1, 1, 1, 1
+                on_release: root.dismiss()
+            Button:
+                text: 'Select'
+                background_normal: ''
+                background_color: 0.3, 0.98, 0.6, 1
+                color: 0, 0, 0, 1
+                on_release: app.confirm_date_selection()
+
+<EventTimePickerPopup@Popup>:
+    title: ''
+    title_size: 0
+    selected_time: ""
+    size_hint: 0.85, 0.65
+    auto_dismiss: False
+    background_color: 0.06, 0.06, 0.14, 0.95
+    separator_height: 0
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(16)
+        
+        Label:
+            text: 'Select Time'
+            color: 1, 1, 1, 1
+            font_size: '18sp'
+            bold: True
+            size_hint_y: None
+            height: dp(40)
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.size
+        
+        # Time picker with scrollable hours, minutes, and AM/PM
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: dp(15)
+            size_hint_y: 1
+            
+            # Hours picker (1-12)
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 1
+                Label:
+                    text: 'Hour'
+                    color: 1, 1, 1, 1
+                    font_size: '14sp'
+                    size_hint_y: None
+                    height: dp(30)
+                    halign: 'center'
+                ScrollView:
+                    id: hour_scroll
+                    bar_color: 1,1,1,.2
+                    bar_inactive_color: 1,1,1,.1
+                    GridLayout:
+                        id: hour_grid
+                        cols: 1
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(4)
+            
+            # Minutes picker
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 1
+                Label:
+                    text: 'Minute'
+                    color: 1, 1, 1, 1
+                    font_size: '14sp'
+                    size_hint_y: None
+                    height: dp(30)
+                    halign: 'center'
+                ScrollView:
+                    id: minute_scroll
+                    bar_color: 1,1,1,.2
+                    bar_inactive_color: 1,1,1,.1
+                    GridLayout:
+                        id: minute_grid
+                        cols: 1
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(4)
+            
+            # AM/PM picker
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.8
+                Label:
+                    text: 'AM/PM'
+                    color: 1, 1, 1, 1
+                    font_size: '14sp'
+                    size_hint_y: None
+                    height: dp(30)
+                    halign: 'center'
+                ScrollView:
+                    id: ampm_scroll
+                    bar_color: 1,1,1,.2
+                    bar_inactive_color: 1,1,1,.1
+                    GridLayout:
+                        id: ampm_grid
+                        cols: 1
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(4)
+        
+        # Selected time display
+        Label:
+            id: selected_time_label
+            text: 'Selected: 12:00 pm'
+            color: 0.3, 0.98, 0.6, 1
+            font_size: '16sp'
+            bold: True
+            size_hint_y: None
+            height: dp(40)
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.size
+        
+        # Buttons
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(12)
+            Button:
+                text: 'Cancel'
+                background_normal: ''
+                background_color: 0.2, 0.2, 0.35, 1
+                color: 1, 1, 1, 1
+                on_release: root.dismiss()
+            Button:
+                text: 'Confirm'
+                background_normal: ''
+                background_color: 0.3, 0.98, 0.6, 1
+                color: 0, 0, 0, 1
+                on_release: app.confirm_time_selection()
+
+<ErrorPopup@Popup>:
+    title: ''
+    message: ""
+    size_hint: 0.75, 0.3
+    auto_dismiss: True
+    background_color: 0.06, 0.06, 0.14, 0.95
+    separator_height: 0
+    title_size: 0
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(16)
+        
+        Label:
+            text: root.message
+            color: 1, 1, 1, 1
+            font_size: '16sp'
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.size
+            size_hint_y: 1
+        
+        Button:
+            text: 'OK'
+            size_hint_y: None
+            height: dp(44)
+            background_normal: ''
+            background_color: 0.3, 0.98, 0.6, 1
+            color: 0, 0, 0, 1
+            on_release: root.dismiss()
+
+<EventEditPopup@Popup>:
+    title: ''
+    title_size: 0
+    size_hint: 0.9, 0.75
+    auto_dismiss: False
+    background_color: 0.06, 0.06, 0.14, 0.95
+    separator_height: 0
+    event_id: 0
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(16)
+        
+        Label:
+            text: 'Event Title'
+            color: 1, 1, 1, 1
+            font_size: '16sp'
+            size_hint_y: None
+            height: dp(30)
+            halign: 'left'
+        
+        TextInput:
+            id: edit_event_title_input
+            hint_text: 'Enter event title...'
+            multiline: False
+            background_normal: ''
+            background_color: 0.15, 0.15, 0.26, 1
+            foreground_color: 1, 1, 1, 1
+            cursor_color: 0.3, 0.98, 0.6, 1
+            padding: dp(12), dp(10)
+            font_size: '15sp'
+            size_hint_y: None
+            height: dp(50)
+        
+        Label:
+            text: 'Date'
+            color: 1, 1, 1, 1
+            font_size: '16sp'
+            size_hint_y: None
+            height: dp(30)
+            halign: 'left'
+        
+        Button:
+            id: edit_event_date_button
+            text: 'Select Date'
+            size_hint_y: None
+            height: dp(50)
+            background_normal: ''
+            background_color: 0.15, 0.15, 0.26, 1
+            color: 1, 1, 1, 1
+            font_size: '15sp'
+            on_release: app.open_date_picker_for_edit_event(root)
+        
+        Label:
+            text: 'Time'
+            color: 1, 1, 1, 1
+            font_size: '16sp'
+            size_hint_y: None
+            height: dp(30)
+            halign: 'left'
+        
+        Button:
+            id: edit_event_time_button
+            text: 'Select Time'
+            size_hint_y: None
+            height: dp(50)
+            background_normal: ''
+            background_color: 0.15, 0.15, 0.26, 1
+            color: 1, 1, 1, 1
+            font_size: '15sp'
+            on_release: app.open_time_picker_for_edit_event(root)
+        
+        # Recurring event toggle
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(40)
+            spacing: dp(12)
+            Label:
+                text: 'Repeat Weekly'
+                color: 1, 1, 1, 1
+                font_size: '16sp'
+                size_hint_x: 0.7
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            CheckBox:
+                id: edit_event_recurring_checkbox
+                size_hint_x: None
+                width: dp(40)
+                active: False
+                on_active: app.on_recurring_toggle_changed(root, self.active)
+        
+        # Repeat days selection (shown when recurring is enabled)
+        BoxLayout:
+            id: edit_repeat_days_container
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 0
+            opacity: 0
+            Label:
+                text: 'Repeat on:'
+                color: 1, 1, 1, 1
+                font_size: '14sp'
+                size_hint_y: None
+                height: dp(25)
+                halign: 'left'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: dp(35)
+                spacing: dp(4)
+                ToggleButton:
+                    id: edit_day_mon
+                    text: 'Mon'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('0', self.state)
+                ToggleButton:
+                    id: edit_day_tue
+                    text: 'Tue'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('1', self.state)
+                ToggleButton:
+                    id: edit_day_wed
+                    text: 'Wed'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('2', self.state)
+                ToggleButton:
+                    id: edit_day_thu
+                    text: 'Thu'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('3', self.state)
+                ToggleButton:
+                    id: edit_day_fri
+                    text: 'Fri'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('4', self.state)
+                ToggleButton:
+                    id: edit_day_sat
+                    text: 'Sat'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('5', self.state)
+                ToggleButton:
+                    id: edit_day_sun
+                    text: 'Sun'
+                    allow_no_selection: True
+                    size_hint_x: 1
+                    font_size: '12sp'
+                    on_state: app.on_repeat_day_changed('6', self.state)
+        
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(12)
+            Button:
+                text: 'Cancel'
+                background_normal: ''
+                background_color: 0.2, 0.2, 0.35, 1
+                color: 1, 1, 1, 1
+                on_release: root.dismiss()
+            Button:
+                text: 'Save'
+                background_normal: ''
+                background_color: 0.3, 0.98, 0.6, 1
+                color: 0, 0, 0, 1
+                on_release: app.update_event_from_popup(root)
+
+<MyHome@BoxLayout>:
+    orientation: "vertical"
+    size_hint: 1, 1
+    padding: [0, 16, 0, 0]
+    spacing: 16
+    canvas.before:
+        Color:
+            rgba: utils.get_color_from_hex('#101024')
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    # Header (profile + title)
+    BoxLayout:
+        size_hint_y: None
+        height: "64dp"
+        spacing: 8
+        padding: [16, 0, 16, 0]
+        CircularAvatar:
+            source: "profile.jpg"
+        Label:
+            id: home_profile_name
+            text: "Time Manager"
+            color: 1,1,1,1
+            font_size: "20sp"
+            bold: True
+            halign: "left"
+            valign: "middle"
+            text_size: self.size
+        Widget:
+            size_hint_x: 1
+
+
+
+    # Scrollable content
+    ScrollView:
+        id: main_scroll
+        do_scroll_x: False
+        bar_color: 1,1,1,.2
+        bar_inactive_color: 1,1,1,.1
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_y: None
+            height: self.minimum_height
+            spacing: 16
+            padding: [16, 0, 16, 0]
+
+            # Timer display only
+            BoxLayout:
+                size_hint_y: None
+                height: "88dp"
+                padding: 0
+                LabelButton:
+                    id: timer_label
+                    text: "00.00.00"
+                    color: 1,1,1,1
+                    bold: True
+                    font_size: "36sp"
+                    on_release: app.open_time_picker()
+                
+            # Timer controls
+            BoxLayout:
+                size_hint_y: None
+                height: "44dp"
+                spacing: 10
+                Button:
+                    text: "Start"
+                    background_normal: ""
+                    background_color: utils.get_color_from_hex("#4cfa9a")
+                    color: 0,0,0,1
+                    on_release: app.timer.start()
+                Button:
+                    text: "Pause"
+                    background_normal: ""
+                    background_color: utils.get_color_from_hex("#ffd166")
+                    color: 0,0,0,1
+                    on_release: app.timer.pause()
+                Button:
+                    text: "Complete"
+                    background_normal: ""
+                    background_color: utils.get_color_from_hex("#a78bfa")
+                    color: 1,1,1,1
+                    on_release: app.complete_session()
+                Button:
+                    text: "Reset"
+                    background_normal: ""
+                    background_color: utils.get_color_from_hex("#ff6b6b")
+                    color: 1,1,1,1
+                    on_release: app.timer.reset()
+
+            # Spacer between timer and cards
+            Widget:
+                size_hint_y: None
+                height: "24dp"
+
+            # Today + Stats row
+            BoxLayout:
+                size_hint_y: None
+                height: "160dp"
+                spacing: 12
+
+                # Schedule card (clickable)
+                ClickableCard:
+                    padding: 16
+                    orientation: "vertical"
+                    spacing: 6
+                    on_release: app.open_schedule_popup()
+                    Label:
+                        text: "Today's Schedule"
+                        color: 1,1,1,1
+                        bold: True
+                        font_size: "16sp"
+                        halign: "left"
+                        valign: "middle"
+                        size_hint_y: None
+                        height: "28dp"
+                        text_size: self.size
+                    Label:
+                        text: app.schedule_text
+                        color: utils.get_color_from_hex('#cfd2ff')
+                        font_size: "13sp"
+                        halign: "left"
+                        valign: "top"
+                        text_size: self.width, None
+
+                # Stats card (clickable)
+                ClickableCard:
+                    padding: 16
+                    orientation: "vertical"
+                    spacing: 6
+                    on_release: app.open_stats_popup()
+                    Label:
+                        text: "Focus Stats"
+                        color: 1,1,1,1
+                        bold: True
+                        font_size: "16sp"
+                        halign: "left"
+                        valign: "middle"
+                        size_hint_y: None
+                        height: "28dp"
+                        text_size: self.size
+                    Widget:
+                        size_hint_y: None
+                        height: "4dp"
+                    Label:
+                        text: app.stats_text
+                        color: utils.get_color_from_hex('#cfd2ff')
+                        font_size: "13sp"
+                        halign: "left"
+                        valign: "top"
+                        text_size: self.width, None
+
+            # Tasks Summary Card (clickable)
+            ClickableCard:
+                size_hint_y: None
+                height: "100dp"
+                padding: 16
+                orientation: "vertical"
+                spacing: 8
+                on_release: app.open_tasks_popup()
+                
+                Label:
+                    text: "Tasks"
+                    color: 1,1,1,1
+                    bold: True
+                    font_size: "16sp"
+                    halign: "left"
+                    valign: "middle"
+                    size_hint_y: None
+                    height: "28dp"
+                    text_size: self.size
+                
+                Label:
+                    id: tasks_summary
+                    text: app.tasks_summary_text
+                    color: utils.get_color_from_hex('#cfd2ff')
+                    font_size: "14sp"
+                    halign: "left"
+                    valign: "top"
+                    text_size: self.size
+
+            # AI Insights Dashboard Card
+            AIInsightsCard:
+                id: ai_insights_card
+                on_release: app.open_ai_insights_popup()
+
+    # Bottom nav with icons above labels and centered mic
+    BoxLayout:
+        size_hint_y: None
+        height: "56dp"
+        padding: 0
+        spacing: 0
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        # Left side
+        NavItem:
+            icon: 'home.png'
+            text: 'Home'
+            size_hint_x: 1
+            on_release: app.navigate_to_home()
+        NavItem:
+            icon: 'calendar.png'
+            text: 'Calendar'
+            single_line: True
+            size_hint_x: 1
+            on_release: app.navigate_to_calendar()
+        # Center mic action (oversized, allowed to overshoot the bar)
+        Widget:
+            size_hint_x: None
+            width: dp(4)
+        RelativeLayout:
+            size_hint: None, None
+            width: dp(64)
+            height: dp(56)
+            IconButton:
+                source: 'mic.png'
+                size_hint: None, None
+                size: '64dp', '64dp'
+                pos_hint: {'center_x': .5, 'center_y': .5}
+                on_release: app.activate_voice_assistant()
+                on_release: app.activate_voice_assistant()
+        Widget:
+            size_hint_x: None
+            width: dp(4)
+        # Right side
+        NavItem:
+            icon: 'analytic.png'
+            text: 'Analytic'
+            size_hint_x: 1
+            on_release: app.navigate_to_analytics()
+        NavItem:
+            icon: 'profile.png'
+            text: 'Profile'
+            size_hint_x: 1
+            on_release: app.navigate_to_profile()
+
+<ProfileScreen@Screen>:
+    name: 'profile'
+    FloatLayout:
+        size_hint: 1, 1
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: 1, 1
+            
+            # Header
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: "64dp"
+                padding: dp(16), dp(12)
+                Label:
+                    text: "Profile"
+                    color: 1, 1, 1, 1
+                    font_size: "20sp"
+                    bold: True
+                    halign: "left"
+                    valign: "middle"
+                    text_size: self.size
+                    size_hint_y: None
+                    height: "40dp"
+                    size_hint_x: 1
+            
+            # Scrollable content
+            ScrollView:
+                id: profile_scroll
+                do_scroll_x: False
+                bar_color: 1,1,1,.2
+                bar_inactive_color: 1,1,1,.1
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(16)
+                    spacing: dp(20)
+                    
+                    # Profile Header Section
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(120)
+                        padding: dp(12)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            size_hint_y: None
+                            height: dp(80)
+                            spacing: dp(12)
+                            CircularAvatar:
+                                source: "profile.jpg"
+                                size: '80dp', '80dp'
+                            BoxLayout:
+                                orientation: 'vertical'
+                                size_hint_x: 1
+                                spacing: dp(4)
+                                Label:
+                                    id: profile_name
+                                    text: "Time Manager"
+                                    color: 1, 1, 1, 1
+                                    font_size: "18sp"
+                                    bold: True
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(30)
+                                Label:
+                                    id: profile_email
+                                    text: "user@example.com"
+                                    color: 0.81, 0.82, 1, 1
+                                    font_size: "13sp"
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(25)
+                    
+                    # Analytics Section
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(200)
+                        padding: dp(12)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            size_hint_y: None
+                            height: dp(30)
+                            Label:
+                                text: "Analytics"
+                                color: 1, 1, 1, 1
+                                font_size: "18sp"
+                                bold: True
+                                halign: 'left'
+                                valign: 'middle'
+                                text_size: self.size
+                                size_hint_x: 1
+                            Label:
+                                text: "This Month"
+                                color: 0.81, 0.82, 1, 1
+                                font_size: "13sp"
+                                halign: 'right'
+                                valign: 'middle'
+                                text_size: self.size
+                                size_hint_x: None
+                                width: dp(100)
+                            IconButton:
+                                source: 'dropdown.png'
+                                size_hint: None, None
+                                size: '16dp', '16dp'
+                                allow_stretch: True
+                                keep_ratio: True
+                        # Progress bar with multi-color segments
+                        Widget:
+                            size_hint_y: None
+                            height: dp(8)
+                            canvas.before:
+                                # Track background
+                                Color:
+                                    rgba: utils.get_color_from_hex('#262642')
+                                RoundedRectangle:
+                                    radius: [4,]
+                                    pos: self.pos
+                                    size: self.size
+                            canvas:
+                                # Total Focus Time segment
+                                Color:
+                                    rgba: utils.get_color_from_hex('#4ADE80')
+                                RoundedRectangle:
+                                    radius: [4, 0, 0, 4]
+                                    pos: self.x, self.y
+                                    size: self.width * 0.25, self.height
+                                # Current Streak segment
+                                Color:
+                                    rgba: utils.get_color_from_hex('#A78BFA')
+                                RoundedRectangle:
+                                    radius: [0, 0, 0, 0]
+                                    pos: self.x + self.width * 0.25, self.y
+                                    size: self.width * 0.25, self.height
+                                # Total Pomodoros segment
+                                Color:
+                                    rgba: utils.get_color_from_hex('#38BDF8')
+                                RoundedRectangle:
+                                    radius: [0, 0, 0, 0]
+                                    pos: self.x + self.width * 0.50, self.y
+                                    size: self.width * 0.25, self.height
+                                # Best Streak segment
+                                Color:
+                                    rgba: utils.get_color_from_hex('#F472B6')
+                                RoundedRectangle:
+                                    radius: [0, 4, 4, 0]
+                                    pos: self.x + self.width * 0.75, self.y
+                                    size: self.width * 0.25, self.height
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            size_hint_y: None
+                            height: dp(120)
+                            spacing: dp(8)
+                            BoxLayout:
+                                orientation: 'vertical'
+                                size_hint_x: 1
+                                spacing: dp(4)
+                                Label:
+                                    text: "| Total Focus Time"
+                                    color: 0.81, 0.82, 1, 1
+                                    font_size: "12sp"
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(25)
+                                Label:
+                                    id: total_focus_time
+                                    text: "0 hours 0 min"
+                                    color: 1, 1, 1, 1
+                                    font_size: "14sp"
+                                    bold: True
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(30)
+                            BoxLayout:
+                                orientation: 'vertical'
+                                size_hint_x: 1
+                                spacing: dp(4)
+                                Label:
+                                    text: "| Current Streak"
+                                    color: 0.81, 0.82, 1, 1
+                                    font_size: "12sp"
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(25)
+                                Label:
+                                    id: current_streak
+                                    text: "0 days"
+                                    color: 1, 1, 1, 1
+                                    font_size: "14sp"
+                                    bold: True
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(30)
+                            BoxLayout:
+                                orientation: 'vertical'
+                                size_hint_x: 1
+                                spacing: dp(4)
+                                Label:
+                                    text: "| Total Pomodoros"
+                                    color: 0.81, 0.82, 1, 1
+                                    font_size: "12sp"
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(25)
+                                Label:
+                                    id: total_pomodoros
+                                    text: "0"
+                                    color: 1, 1, 1, 1
+                                    font_size: "14sp"
+                                    bold: True
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(30)
+                            BoxLayout:
+                                orientation: 'vertical'
+                                size_hint_x: 1
+                                spacing: dp(4)
+                                Label:
+                                    text: "| Best Streak"
+                                    color: 0.81, 0.82, 1, 1
+                                    font_size: "12sp"
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(25)
+                                Label:
+                                    id: best_streak
+                                    text: "0 days"
+                                    color: 1, 1, 1, 1
+                                    font_size: "14sp"
+                                    bold: True
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_y: None
+                                    height: dp(30)
+                    
+                    # Account Settings Section
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(260)
+                        padding: dp(20), dp(24), dp(20), dp(16)
+                        spacing: dp(8)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+                        Label:
+                            text: "Account settings"
+                            color: 1, 1, 1, 1
+                            font_size: "18sp"
+                            bold: True
+                            size_hint_y: None
+                            height: dp(30)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        BoxLayout:
+                            orientation: 'vertical'
+                            size_hint_y: None
+                            height: dp(192)
+                            spacing: 0
+                            padding: dp(4), dp(0)
+                            # Edit Profile
+                            BoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                padding: dp(0), dp(0)
+                                spacing: dp(12)
+                                on_touch_down: if self.collide_point(*args[1].pos): app.navigate_to_edit_profile()
+                                Image:
+                                    source: 'person_icon.png'
+                                    size_hint: None, None
+                                    size: '24dp', '24dp'
+                                    allow_stretch: True
+                                    keep_ratio: True
+                                    pos_hint: {'center_y': 0.5}
+                                Label:
+                                    text: 'Edit Profile'
+                                    color: 1, 1, 1, 1
+                                    font_size: "15sp"
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_x: 1
+                                    pos_hint: {'center_y': 0.5}
+                                Image:
+                                    source: 'arrow_right.png'
+                                    size_hint: None, None
+                                    size: '20dp', '20dp'
+                                    allow_stretch: True
+                                    keep_ratio: True
+                                    pos_hint: {'center_y': 0.5}
+                            # Notification
+                            BoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                padding: dp(0), dp(0)
+                                spacing: dp(12)
+                                on_touch_down: if self.collide_point(*args[1].pos): app.navigate_to_notification_settings()
+                                Image:
+                                    source: 'bell_icon.png'
+                                    size_hint: None, None
+                                    size: '24dp', '24dp'
+                                    allow_stretch: True
+                                    keep_ratio: True
+                                    pos_hint: {'center_y': 0.5}
+                                Label:
+                                    text: 'Notification'
+                                    color: 1, 1, 1, 1
+                                    font_size: "15sp"
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_x: 1
+                                    pos_hint: {'center_y': 0.5}
+                                Image:
+                                    source: 'arrow_right.png'
+                                    size_hint: None, None
+                                    size: '20dp', '20dp'
+                                    allow_stretch: True
+                                    keep_ratio: True
+                                    pos_hint: {'center_y': 0.5}
+                            # Security & Password
+                            BoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                padding: dp(0), dp(0)
+                                spacing: dp(12)
+                                on_touch_down: if self.collide_point(*args[1].pos): app.navigate_to_security_password()
+                                Image:
+                                    source: 'lock_icon.png'
+                                    size_hint: None, None
+                                    size: '24dp', '24dp'
+                                    allow_stretch: True
+                                    keep_ratio: True
+                                    pos_hint: {'center_y': 0.5}
+                                Label:
+                                    text: 'Security & Password'
+                                    color: 1, 1, 1, 1
+                                    font_size: "15sp"
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_x: 1
+                                    pos_hint: {'center_y': 0.5}
+                                Image:
+                                    source: 'arrow_right.png'
+                                    size_hint: None, None
+                                    size: '20dp', '20dp'
+                                    allow_stretch: True
+                                    keep_ratio: True
+                                    pos_hint: {'center_y': 0.5}
+                            # Terms & Condition
+                            BoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                padding: dp(0), dp(0)
+                                spacing: dp(12)
+                                on_touch_down: if self.collide_point(*args[1].pos): app.navigate_to_terms_conditions()
+                                Image:
+                                    source: 'shield_icon.png'
+                                    size_hint: None, None
+                                    size: '24dp', '24dp'
+                                    allow_stretch: True
+                                    keep_ratio: True
+                                    pos_hint: {'center_y': 0.5}
+                                Label:
+                                    text: 'Terms & Condition'
+                                    color: 1, 1, 1, 1
+                                    font_size: "15sp"
+                                    halign: 'left'
+                                    valign: 'middle'
+                                    text_size: self.size
+                                    size_hint_x: 1
+                                    pos_hint: {'center_y': 0.5}
+                                Image:
+                                    source: 'arrow_right.png'
+                                    size_hint: None, None
+                                    size: '20dp', '20dp'
+                                    allow_stretch: True
+                                    keep_ratio: True
+                                    pos_hint: {'center_y': 0.5}
+                    
+                    # About Section
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(100)
+                        padding: dp(12)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+                        Label:
+                            text: "About"
+                            color: 0.3, 0.98, 0.6, 1
+                            font_size: "18sp"
+                            bold: True
+                            size_hint_y: None
+                            height: dp(30)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            id: about_text
+                            text: "Time Manager v1.0\nFocus on what matters"
+                            color: 0.81, 0.82, 1, 1
+                            font_size: "13sp"
+                            size_hint_y: None
+                            height: dp(50)
+                            halign: 'left'
+                            valign: 'top'
+                            text_size: self.width, None
+                    
+                    # Logout Button
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint_y: None
+                        height: dp(60)
+                        padding: dp(12)
+                        spacing: dp(12)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+                        Button:
+                            text: 'Logout'
+                            size_hint_y: None
+                            height: dp(44)
+                            background_normal: ''
+                            background_color: 0.8, 0.2, 0.2, 1
+                            color: 1, 1, 1, 1
+                            font_size: '15sp'
+                            bold: True
+                            on_release: app.logout()
+            
+            # Bottom nav (shared with other screens)
+            BoxLayout:
+                size_hint_y: None
+                height: "56dp"
+                padding: 0
+                spacing: 0
+                canvas.before:
+                    Color:
+                        rgba: 0, 0, 0, 1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                # Left side
+                NavItem:
+                    icon: 'home.png'
+                    text: 'Home'
+                    size_hint_x: 1
+                    on_release: app.navigate_to_home()
+                NavItem:
+                    icon: 'calendar.png'
+                    text: 'Calendar'
+                    single_line: True
+                    size_hint_x: 1
+                    on_release: app.navigate_to_calendar()
+                # Center mic action (oversized, allowed to overshoot the bar)
+                Widget:
+                    size_hint_x: None
+                    width: dp(4)
+                RelativeLayout:
+                    size_hint: None, None
+                    width: dp(64)
+                    height: dp(56)
+                    IconButton:
+                        source: 'mic.png'
+                        size_hint: None, None
+                        size: '64dp', '64dp'
+                        pos_hint: {'center_x': .5, 'center_y': .5}
+                        on_release: app.activate_voice_assistant()
+                Widget:
+                    size_hint_x: None
+                    width: dp(4)
+                # Right side
+                NavItem:
+                    icon: 'analytic.png'
+                    text: 'Analytic'
+                    size_hint_x: 1
+                    on_release: app.navigate_to_analytics()
+                NavItem:
+                    icon: 'profile.png'
+                    text: 'Profile'
+                    size_hint_x: 1
+                    on_release: app.navigate_to_profile()
+
+<EditProfileScreen@Screen>:
+    name: 'edit_profile'
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        # Header with back button
+        BoxLayout:
+            size_hint_y: None
+            height: dp(64)
+            padding: dp(16), dp(12)
+            spacing: dp(12)
+            Button:
+                text: '< Back'
+                size_hint_x: None
+                width: dp(90)
+                background_normal: ''
+                background_color: utils.get_color_from_hex('#2d2d48')
+                color: 1, 1, 1, 1
+                on_release: app.cancel_edit_profile()
+            Label:
+                text: 'Edit Profile'
+                color: 1, 1, 1, 1
+                font_size: '20sp'
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Widget:
+                size_hint_x: None
+                width: dp(48)
+        
+        # Scrollable form
+        ScrollView:
+            do_scroll_x: False
+            bar_color: 1, 1, 1, .2
+            bar_inactive_color: 1, 1, 1, .1
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(20)
+                spacing: dp(16)
+                
+                Label:
+                    text: 'Update your profile information'
+                    color: 0.81, 0.82, 1, 1
+                    font_size: '14sp'
+                    size_hint_y: None
+                    height: dp(24)
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                
+                # Profile info card
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(20)
+                    spacing: dp(12)
+                    canvas.before:
+                        Color:
+                            rgba: utils.get_color_from_hex('#262642')
+                        RoundedRectangle:
+                            radius: [20,]
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: 'Username'
+                        color: 1, 1, 1, 1
+                        font_size: '14sp'
+                        size_hint_y: None
+                        height: dp(22)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    TextInput:
+                        id: edit_username
+                        text: ''
+                        size_hint_y: None
+                        height: dp(44)
+                        multiline: False
+                        background_normal: ''
+                        background_color: utils.get_color_from_hex('#1b1b30')
+                        foreground_color: 1, 1, 1, 1
+                        cursor_color: 0.3, 0.98, 0.6, 1
+                        padding: dp(10), dp(12)
+                    
+                    Label:
+                        text: 'Email'
+                        color: 1, 1, 1, 1
+                        font_size: '14sp'
+                        size_hint_y: None
+                        height: dp(22)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    TextInput:
+                        id: edit_email
+                        text: ''
+                        size_hint_y: None
+                        height: dp(44)
+                        multiline: False
+                        background_normal: ''
+                        background_color: utils.get_color_from_hex('#1b1b30')
+                        foreground_color: 1, 1, 1, 1
+                        cursor_color: 0.3, 0.98, 0.6, 1
+                        padding: dp(10), dp(12)
+                
+                # Buttons
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: dp(56)
+                    spacing: dp(12)
+                    Button:
+                        text: 'Cancel'
+                        background_normal: ''
+                        background_color: utils.get_color_from_hex('#2d2d48')
+                        color: 1, 1, 1, 1
+                        on_release: app.cancel_edit_profile()
+                    Button:
+                        text: 'Save Changes'
+                        background_normal: ''
+                        background_color: utils.get_color_from_hex('#3EE68F')
+                        color: 0, 0, 0, 1
+                        on_release: app.save_profile_changes()
+
+<CalendarScreen@Screen>:
+    name: 'calendar'
+    FloatLayout:
+        size_hint: 1, 1
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        # Main content (BoxLayout)
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: 1, 1
+            pos_hint: {'x': 0, 'y': 0}
+            
+            # Header with title
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: "64dp"
+                padding: dp(16), dp(12)
+                Label:
+                    text: "Calendar"
+                    color: 1, 1, 1, 1
+                    font_size: "20sp"
+                    bold: True
+                    halign: "left"
+                    valign: "middle"
+                    text_size: self.size
+                    size_hint_y: None
+                    height: "40dp"
+            
+            # Scrollable content
+            ScrollView:
+                id: calendar_scroll
+                do_scroll_x: False
+                bar_color: 1,1,1,.2
+                bar_inactive_color: 1,1,1,.1
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(16)
+                    spacing: dp(16)
+                    
+                    # Month/Year header with navigation
+                    BoxLayout:
+                        size_hint_y: None
+                        height: "50dp"
+                        spacing: dp(12)
+                        AnchorLayout:
+                            anchor_x: 'left'
+                            anchor_y: 'center'
+                            size_hint_x: 1
+                            size_hint_y: None
+                            height: "40dp"
+                            IconButton:
+                                source: 'backarrow.png'
+                                size_hint: None, None
+                                size: "40dp", "40dp"
+                                allow_stretch: True
+                                keep_ratio: True
+                                on_release: app.prev_month()
+                        Label:
+                            id: month_year_label
+                            text: app.month_year_text
+                            color: 1, 1, 1, 1
+                            font_size: "18sp"
+                            bold: True
+                            halign: "center"
+                            valign: "middle"
+                            text_size: dp(120), None
+                            size_hint_x: None
+                            size_hint_y: None
+                            width: dp(120)
+                            height: "40dp"
+                        AnchorLayout:
+                            anchor_x: 'right'
+                            anchor_y: 'center'
+                            size_hint_x: 1
+                            size_hint_y: None
+                            height: "40dp"
+                            IconButton:
+                                source: 'forwardarrow.png'
+                                size_hint: None, None
+                                size: "40dp", "40dp"
+                                allow_stretch: True
+                                keep_ratio: True
+                                on_release: app.next_month()
+                    
+                    # Today label
+                    Button:
+                        text: app.today_text
+                        color: 0.8, 0.8, 1, 1
+                        font_size: "14sp"
+                        size_hint_y: None
+                        height: "30dp"
+                        halign: "center"
+                        valign: "middle"
+                        text_size: self.size
+                        background_normal: ''
+                        background_color: 0, 0, 0, 0
+                        on_release: app.navigate_to_today()
+                    
+                    # Calendar grid
+                    BoxLayout:
+                        id: calendar_grid_container
+                        orientation: "vertical"
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(4)
+                        padding: dp(8)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+            
+            # Bottom nav (shared with home screen)
+            BoxLayout:
+                size_hint_y: None
+                height: "56dp"
+                padding: 0
+                spacing: 0
+                canvas.before:
+                    Color:
+                        rgba: 0, 0, 0, 1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                # Left side
+                NavItem:
+                    icon: 'home.png'
+                    text: 'Home'
+                    size_hint_x: 1
+                    on_release: app.navigate_to_home()
+                NavItem:
+                    icon: 'calendar.png'
+                    text: 'Calendar'
+                    single_line: True
+                    size_hint_x: 1
+                    on_release: app.navigate_to_calendar()
+                # Center mic action (oversized, allowed to overshoot the bar)
+                Widget:
+                    size_hint_x: None
+                    width: dp(4)
+                RelativeLayout:
+                    size_hint: None, None
+                    width: dp(64)
+                    height: dp(56)
+                    IconButton:
+                        source: 'mic.png'
+                        size_hint: None, None
+                        size: '64dp', '64dp'
+                        pos_hint: {'center_x': .5, 'center_y': .5}
+                        on_release: app.activate_voice_assistant()
+                Widget:
+                    size_hint_x: None
+                    width: dp(4)
+                # Right side
+                NavItem:
+                    icon: 'analytic.png'
+                    text: 'Analytic'
+                    size_hint_x: 1
+                    on_release: app.navigate_to_analytics()
+                NavItem:
+                    icon: 'profile.png'
+                    text: 'Profile'
+                    size_hint_x: 1
+                    on_release: app.navigate_to_profile()
+        
+        # Floating action button for adding events (overlay)
+        AnchorLayout:
+            anchor_x: 'right'
+            anchor_y: 'bottom'
+            size_hint: 1, 1
+            padding: [dp(20), 0, dp(20), dp(80)]
+            Button:
+                text: "+"
+                size_hint: None, None
+                size: "56dp", "56dp"
+                background_normal: ''
+                background_color: 0.3, 0.98, 0.6, 1
+                color: 0, 0, 0, 1
+                font_size: "32sp"
+                bold: True
+                canvas.before:
+                    Color:
+                        rgba: 0.3, 0.98, 0.6, 1
+                    Ellipse:
+                        pos: self.pos
+                        size: self.size
+                on_release: app.open_create_event_popup()
+
+<AnalyticsScreen@Screen>:
+    name: 'analytics'
+    FloatLayout:
+        size_hint: 1, 1
+        canvas.before:
+            Color:
+                rgba: utils.get_color_from_hex('#101024')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: 1, 1
+            
+            # Header
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: "64dp"
+                padding: dp(16), dp(12)
+                Label:
+                    text: "Analytics"
+                    color: 1, 1, 1, 1
+                    font_size: "20sp"
+                    bold: True
+                    halign: "left"
+                    valign: "middle"
+                    text_size: self.size
+                    size_hint_y: None
+                    height: "40dp"
+                    size_hint_x: 1
+                IconButton:
+                    source: 'refresh.png'
+                    size_hint: None, None
+                    size: "32dp", "32dp"
+                    allow_stretch: True
+                    keep_ratio: True
+                    on_release: app.refresh_analytics()
+            
+            # Scrollable content
+            ScrollView:
+                id: analytics_scroll
+                do_scroll_x: False
+                bar_color: 1,1,1,.2
+                bar_inactive_color: 1,1,1,.1
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(16)
+                    spacing: dp(20)
+                    
+                    # Peak Hours Section
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(280)
+                        padding: dp(12)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+                        Label:
+                            text: "Peak Hours"
+                            color: 0.3, 0.98, 0.6, 1
+                            font_size: "18sp"
+                            bold: True
+                            size_hint_y: None
+                            height: dp(30)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            id: peak_hours_insight
+                            text: "Most productive: 10 AM - 12 PM"
+                            color: 0.81, 0.82, 1, 1
+                            font_size: "13sp"
+                            size_hint_y: None
+                            height: dp(25)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Image:
+                            id: hourly_graph
+                            allow_stretch: True
+                            keep_ratio: True
+                            size_hint_y: None
+                            height: dp(200)
+                    
+                    # Day Patterns Section
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(280)
+                        padding: dp(12)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+                        Label:
+                            text: "Day Patterns"
+                            color: 0.66, 0.55, 0.98, 1
+                            font_size: "18sp"
+                            bold: True
+                            size_hint_y: None
+                            height: dp(30)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            id: day_pattern_insight
+                            text: "Best day: Tuesday"
+                            color: 0.81, 0.82, 1, 1
+                            font_size: "13sp"
+                            size_hint_y: None
+                            height: dp(25)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Image:
+                            id: day_pattern_graph
+                            allow_stretch: True
+                            keep_ratio: True
+                            size_hint_y: None
+                            height: dp(200)
+                    
+                    # Session Stats Section
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(180)
+                        padding: dp(12)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+                        Label:
+                            text: "Session Stats"
+                            color: 0.3, 0.98, 0.6, 1
+                            font_size: "18sp"
+                            bold: True
+                            size_hint_y: None
+                            height: dp(30)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            id: session_stats_text
+                            text: "Avg: 28 min\nLongest: 45 min\nShortest: 5 min"
+                            color: 0.81, 0.82, 1, 1
+                            font_size: "14sp"
+                            size_hint_y: None
+                            height: dp(120)
+                            halign: 'left'
+                            valign: 'top'
+                            text_size: self.width, None
+                    
+                    # Streak Section
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(120)
+                        padding: dp(12)
+                        canvas.before:
+                            Color:
+                                rgba: utils.get_color_from_hex('#262642')
+                            RoundedRectangle:
+                                radius: [16,]
+                                pos: self.pos
+                                size: self.size
+                        Label:
+                            text: "Focus Streak"
+                            color: 0.66, 0.55, 0.98, 1
+                            font_size: "18sp"
+                            bold: True
+                            size_hint_y: None
+                            height: dp(30)
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+                        Label:
+                            id: streak_text
+                            text: "Current: 5 days\nBest: 12 days"
+                            color: 0.81, 0.82, 1, 1
+                            font_size: "14sp"
+                            size_hint_y: None
+                            height: dp(60)
+                            halign: 'left'
+                            valign: 'top'
+                            text_size: self.width, None
+            
+            # Bottom nav (shared with other screens)
+            BoxLayout:
+                size_hint_y: None
+                height: "56dp"
+                padding: 0
+                spacing: 0
+                canvas.before:
+                    Color:
+                        rgba: 0, 0, 0, 1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                # Left side
+                NavItem:
+                    icon: 'home.png'
+                    text: 'Home'
+                    size_hint_x: 1
+                    on_release: app.navigate_to_home()
+                NavItem:
+                    icon: 'calendar.png'
+                    text: 'Calendar'
+                    single_line: True
+                    size_hint_x: 1
+                    on_release: app.navigate_to_calendar()
+                # Center mic action (oversized, allowed to overshoot the bar)
+                Widget:
+                    size_hint_x: None
+                    width: dp(4)
+                RelativeLayout:
+                    size_hint: None, None
+                    width: dp(64)
+                    height: dp(56)
+                    IconButton:
+                        source: 'mic.png'
+                        size_hint: None, None
+                        size: '64dp', '64dp'
+                        pos_hint: {'center_x': .5, 'center_y': .5}
+                        on_release: app.activate_voice_assistant()
+                Widget:
+                    size_hint_x: None
+                    width: dp(4)
+                # Right side
+                NavItem:
+                    icon: 'analytic.png'
+                    text: 'Analytic'
+                    size_hint_x: 1
+                    on_release: app.navigate_to_analytics()
+                NavItem:
+                    icon: 'profile.png'
+                    text: 'Profile'
+                    size_hint_x: 1
+                    on_release: app.navigate_to_profile()
